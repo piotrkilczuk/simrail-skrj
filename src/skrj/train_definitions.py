@@ -1,13 +1,26 @@
 from __future__ import annotations
 
+import contextlib
 import datetime
+from io import FileIO
 from typing import NamedTuple, Set
 
+from skrj import const
 
-class Train(NamedTuple):
+
+class Train:
     category: str
     number: int
     offset: datetime.timedelta
+
+    def __init__(self, category: str, number: int, offset: datetime.timedelta):
+        self.category = category
+        self.number = number
+        self.offset = offset
+
+    @contextlib.contextmanager
+    def fodt_file(self) -> FileIO:
+        yield (const.BUILD_DIR / f"{self.category}_{self.number}.fodt").open("w")
 
 
 class TrainGroupDefinitionRegistry:
@@ -60,6 +73,10 @@ class TrainGroupDefinition:
         self._last_number += 2
         self._last_offset += self.interval
         return train
+
+    @property
+    def template(self) -> str:
+        return (const.TEMPLATES_DIR / f"{self.train_category}_{self.start_number}.fodt").read_text()
 
 
 train14100 = TrainGroupDefinition("EIE", 14100)
