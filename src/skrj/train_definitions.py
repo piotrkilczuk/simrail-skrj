@@ -1,11 +1,29 @@
+from __future__ import annotations
+
 import datetime
-from typing import NamedTuple
+from typing import NamedTuple, Set
 
 
 class Train(NamedTuple):
     category: str
     number: int
     offset: datetime.timedelta
+
+
+class TrainGroupDefinitionRegistry:
+    train_group_definitions: Set[TrainGroupDefinition]
+
+    def __init__(self):
+        self.train_group_definitions = set()
+
+    def register(self, train_group: TrainGroupDefinition):
+        self.train_group_definitions.add(train_group)
+
+    def __iter__(self):
+        return iter(self.train_group_definitions)
+
+
+registry = TrainGroupDefinitionRegistry()
 
 
 class TrainGroupDefinition:
@@ -25,6 +43,10 @@ class TrainGroupDefinition:
         self.train_category = train_category
         self.start_number = start_number
         self.interval = interval
+        registry.register(self)
+
+    def __repr__(self):
+        return f"<TrainGroupDefinition: {self.train_category} {self.start_number} every {self.interval}>"
 
     def __iter__(self):
         self._last_number = self.start_number
@@ -40,4 +62,4 @@ class TrainGroupDefinition:
         return train
 
 
-Train14100 = TrainGroupDefinition("EIE", 14100)
+train14100 = TrainGroupDefinition("EIE", 14100)
