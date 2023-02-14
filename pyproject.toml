@@ -1,3 +1,7 @@
+[tool.black]
+line-length = 120
+target-version = ['py310']
+
 [tool.poetry]
 name = "simrail-rjp"
 version = "0.1.0"
@@ -7,7 +11,6 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-Jinja2 = "^3.1.2"
 
 [tool.poetry.dev-dependencies]
 

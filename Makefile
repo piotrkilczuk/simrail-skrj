@@ -4,7 +4,7 @@ DOCKER_IMAGE=ghcr.io/piotrkilczuk/simrail-skrj:latest
 
 build:
 	rm -v build/*.fodt build/*.pdf || true
-	BUILD_DIR=`pwd`/build python -m skrj
+	PYTHONPATH=src/:$${PYTHONPATH} BUILD_DIR=`pwd`/build python -m skrj
 	libreoffice --headless --convert-to pdf --outdir build/ build/*.fodt
 
 build-docker:
