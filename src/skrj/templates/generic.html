@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Simrail SKRJ">
+    <title>Simrail SKRJ - {{ train.trainNoLocal }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        @font-face {
+            font-family: 'Times Newer Roman';
+            src: url('fonts/subset-TimesNewerRoman-Italic.woff2') format('woff2'),
+                 url('fonts/subset-TimesNewerRoman-Italic.woff') format('woff');
+            font-weight: normal;
+            font-style: italic;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Times Newer Roman';
+            src: url('fonts/subset-TimesNewerRoman-Regular.woff2') format('woff2'),
+                 url('fonts/subset-TimesNewerRoman-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Times Newer Roman';
+            src: url('fonts/subset-TimesNewerRoman-Bold.woff2') format('woff2'),
+                 url('fonts/subset-TimesNewerRoman-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Times Newer Roman';
+            src: url('fonts/subset-TimesNewerRoman-BoldItalic.woff2') format('woff2'),
+                 url('fonts/subset-TimesNewerRoman-BoldItalic.woff') format('woff');
+            font-weight: bold;
+            font-style: italic;
+            font-display: swap;
+        }
+
+        body {
+            font-family: "Times Newer Roman", serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h5 class="fw-bold">Pociag {{ train.trainNoLocal }} Relacja {{ train.startStation }} - {{ train.endStation }}</h5>
+        <div class="row text-center">
+            <div class="col border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">Nr linii</div>
+            <div class="col d-inline-block border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">Km</div>
+            <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">V<sub>p</sub></div>
+            <div class="col-6 d-table-cell border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">Stacja</div>
+            <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">Godzina</div>
+            <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">Lok</div>
+            <div class="col d-table-cell border border-dark border-bottom-0 align-middle px-0">
+                <div class="border-bottom border-dark">Obc. lok.</div>
+                <div>Dł. poc.</div>
+            </div>
+        </div>
+        {% for point in timetable %}
+            <div class="row text-center fs-5">
+                {# Nr linii #}
+                {% if loop.first or point.line != loop.previtem.line %}
+                    <div class="col border border-dark border-end-0 border-bottom-0 align-middle">
+                        {{ point.line }}
+                    </div>
+                {% else %}
+                    <div class="col border border-dark border-end-0 border-top-0 border-bottom-0 align-middle">
+                    </div>
+                {% endif %}
+
+                {# Km #}
+                {% if loop.first or point.line != loop.previtem.line %}
+                    <div class="col border border-dark border-end-0 border-bottom-0 align-middle">
+                        {{ "%.3f"|format(point.mileage) }}
+                    </div>
+                {% else %}
+                    <div class="col border border-dark border-end-0 border-top-0 border-bottom-0 align-middle">
+                    </div>
+                {% endif %}
+
+                {# Vp #}
+                <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle"></div>
+
+                {# Stacja #}
+                <div class="col-6 d-table-cell border border-dark border-end-0 border-bottom-0 align-middle">
+                    <div class="text-start {% if point.stationCategory %}fw-bold text-uppercase{% endif %}">{{ point.nameOfPoint }}</div>
+                    <div class="container px-0 mt-4">
+                        <div class="row">
+                            <div class="col text-start">{{ "%.3f"|format(point.mileage) }}</div>
+                            <div class="col text-end">{{ point.radioChanels }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Godzina #}
+                <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle">
+                    <div>
+                        {% if not loop.first %}
+                            {% if point.stopType == 'NoStopOver' %}
+                                |
+                            {% else %}
+                                {{ point.arrivalTime.split()[1][:-3] }}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-4">
+                        {% if not loop.last %}
+                            {{ point.departureTime.split()[1][:-3] }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Lok #}
+                <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle"></div>
+
+                {# Obc. lok / Dł. poc. #}
+                <div class="col d-table-cell border border-dark border-bottom-0 align-middle"></div>
+            </div>
+        {% endfor %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>

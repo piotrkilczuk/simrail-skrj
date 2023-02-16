@@ -1,2 +1,3 @@
 /build/*.fodt
+/build/*.html
 /build/*.pdf
