@@ -5,7 +5,7 @@ import warnings
 
 import jinja2
 
-from skrj import train_definitions, const
+from skrj import train_definitions, const, enrichments
 
 HOUR_RE = re.compile(r">([0-2][0-9]:[0-6][0-9])<")
 
@@ -28,9 +28,11 @@ HOUR_RE = re.compile(r">([0-2][0-9]:[0-6][0-9])<")
 def build_htmls():
     with const.JSON_TRAIN.open() as json_file:
         train_data = json.load(json_file)[0]
+        timetable = train_data["timetable"]
+        enriched_timetable = enrichments.enrich_timetable(timetable)
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(const.TEMPLATES_DIR))
     template = env.get_template("generic.html")
-    rendered = template.render(train=train_data, timetable=train_data["timetable"])
+    rendered = template.render(train=train_data, timetable=enriched_timetable)
     (const.BUILD_DIR / "train.html").write_text(rendered)
 
 

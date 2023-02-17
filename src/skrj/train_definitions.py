@@ -3,7 +3,7 @@ from __future__ import annotations
 import contextlib
 import datetime
 from io import FileIO
-from typing import NamedTuple, Set
+from typing import Set
 
 from skrj import const
 
