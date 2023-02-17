@@ -53,7 +53,7 @@
         <div class="container-fluid border border-dark border-start-0 border-top-0 border-end-0">
             <h4 class="fw-bold mb-4">Pociag {{ timetable[0].trainType }} {{ train.trainNoLocal }} Relacja {{ train.startStation }} - {{ train.endStation }}</h4>
             <div class="row text-center">
-                <div class="col border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem; width: 2cm">Nr linii</div>
+                <div class="col border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">Nr linii</div>
                 <div class="col-2 d-inline-block border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">Km</div>
                 <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">V<sub>p</sub></div>
                 <div class="col-5 d-table-cell border border-dark border-end-0 border-bottom-0 align-middle px-0" style="line-height: 3rem">Stacja</div>
@@ -68,11 +68,11 @@
                 <div class="row text-center fs-4">
                     {# Nr linii #}
                     {% if loop.first or point.line != loop.previtem.line %}
-                        <div class="col border border-dark border-end-0 border-bottom-0 align-middle" style="width: 2cm">
+                        <div class="col border border-dark border-end-0 border-bottom-0 align-middle">
                             {{ point.line }}
                         </div>
                     {% else %}
-                        <div class="col border border-dark border-end-0 border-top-0 border-bottom-0 align-middle" style="width: 1cm">
+                        <div class="col border border-dark border-end-0 border-top-0 border-bottom-0 align-middle">
                         </div>
                     {% endif %}
 
@@ -107,6 +107,70 @@
                                 <span class="text-lowercase">;&nbspzd</span>
                             {% endif %}
                         </div>
+                    </div>
+
+                    {# Godzina #}
+                    <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle">
+                        {% if not loop.first %}
+                            {% if point.stopType == 'NoStopOver' %}
+                                |
+                            {% else %}
+                                {{ point.arrivalTime.split()[1][:-3] }}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    {# Lok #}
+                    <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle fs-6">
+<!--                        {{ train.locoType }}-->
+                    </div>
+
+                    {# Obc. lok #}
+                    <div class="col d-table-cell border border-dark border-bottom-0 align-middle fs-5">
+                        {{ train.trainWeight }}
+                    </div>
+                </div>
+
+                {% for point in point.speedChanges %}
+                    <div class="row text-center fs-4">
+                        <div class="col border border-dark border-end-0 border-top-0 border-bottom-0 align-middle">
+                        </div>
+
+                        <div class="col-2 border border-dark border-end-0 border-bottom-0 align-middle">
+                            {{ "%.3f"|format(point.mileage) }}
+                        </div>
+
+                        {# Vp #}
+                        <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle fw-bold">
+                            {{ point.maxSpeed }}
+                        </div>
+
+                        <div class="col-5 d-table-cell border border-dark border-end-0 border-bottom-0 border-top-0 align-middle">
+                        </div>
+
+                        <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 border-top-0 align-middle">
+                        </div>
+
+                        {# Lok #}
+                        <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 border-top-0 align-middle"></div>
+
+                        {# Dł. poc. #}
+                        <div class="col d-table-cell border border-dark border-bottom-0 border-top-0 align-middle fs-5">
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="row text-center fs-4">
+                    <div class="col border border-dark border-end-0 border-top-0 border-bottom-0 align-middle">
+                    </div>
+
+                    <div class="col-2 border border-dark border-end-0 border-top-0 border-bottom-0 align-middle">
+                    </div>
+
+                    <div class="col border border-dark border-end-0 border-top-0 border-bottom-0 align-middle">
+                    </div>
+
+                    <div class="col-5 d-table-cell border border-dark border-end-0 border-bottom-0 border-top-0 align-middle">
                         <div class="container-fluid px-0 mt-4">
                             <div class="row">
                                 <div class="col text-start">{{ "%.3f"|format(point.mileage) }}</div>
@@ -115,19 +179,8 @@
                         </div>
                     </div>
 
-                    {# Godzina #}
-                    <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle">
-                        <div>
-                            {% if not loop.first %}
-                                {% if point.stopType == 'NoStopOver' %}
-                                    |
-                                {% else %}
-                                    {{ point.arrivalTime.split()[1][:-3] }}
-                                {% endif %}
-                            {% endif %}
-                        </div>
-
-                        <div class="mt-4">
+                    <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 border-top-0 align-middle">
+                        <div class="container-fluid px-0 mt-4">
                             {% if not loop.last %}
                                 {{ point.departureTime.split()[1][:-3] }}
                             {% endif %}
@@ -135,10 +188,14 @@
                     </div>
 
                     {# Lok #}
-                    <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle"></div>
+                    <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 border-top-0 align-middle"></div>
 
-                    {# Obc. lok / Dł. poc. #}
-                    <div class="col d-table-cell border border-dark border-bottom-0 align-middle"></div>
+                    {# Dł. poc. #}
+                    <div class="col d-table-cell border border-dark border-bottom-0 align-middle fs-5">
+                        <div class="container-fluid px-0 mt-4">
+                            {{ train.trainLength }}
+                        </div>
+                    </div>
                 </div>
             {% endfor %}
         </div>
