@@ -13,3 +13,6 @@ build-docker:
 docker-image:
 	docker build --pull . -t $(DOCKER_IMAGE)
 	docker push $(DOCKER_IMAGE)
+
+deploy: build
+	netlify deploy --dir=`pwd`/build --prod

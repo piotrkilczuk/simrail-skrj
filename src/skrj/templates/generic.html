@@ -77,7 +77,11 @@
                     {% endif %}
 
                     {# Km #}
-                    {% if loop.first or point.line != loop.previtem.line or point.maxSpeed != loop.previtem.maxSpeed %}
+                    {%
+                        if loop.first or point.line != loop.previtem.line or
+                        (not loop.previtem.get('speedChanges') and point.maxSpeed != loop.previtem.maxSpeed) or
+                        (loop.previtem.get('speedChanges') and point.maxSpeed != loop.previtem.speedChanges[-1].maxSpeed)
+                    %}
                         <div class="col-2 border border-dark border-end-0 border-bottom-0 align-middle">
                             {{ "%.3f"|format(point.mileage) }}
                         </div>
@@ -87,7 +91,11 @@
                     {% endif %}
 
                     {# Vp #}
-                    {% if loop.first or point.maxSpeed != loop.previtem.maxSpeed %}
+                    {%
+                        if loop.first or
+                        (not loop.previtem.get('speedChanges') and point.maxSpeed != loop.previtem.maxSpeed) or
+                        (loop.previtem.get('speedChanges') and point.maxSpeed != loop.previtem.speedChanges[-1].maxSpeed)
+                    %}
                         <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle fw-bold">
                             {{ point.maxSpeed }}
                         </div>
@@ -122,7 +130,7 @@
 
                     {# Lok #}
                     <div class="col d-table-cell border border-dark border-end-0 border-bottom-0 align-middle fs-6">
-<!--                        {{ train.locoType }}-->
+                        {{ train.locoType }}
                     </div>
 
                     {# Obc. lok #}
