@@ -81,6 +81,8 @@ class Enrichment:
 def enrich_timetable(timetable: List[Dict]) -> List[Dict]:
     enriched_timetable = []
 
+    from skrj.enrichments import speed
+
     for idx, current_point in enumerate(timetable):
         try:
             next_point = timetable[idx + 1]
@@ -91,8 +93,8 @@ def enrich_timetable(timetable: List[Dict]) -> List[Dict]:
             if enrichment.matches_point(current_point, next_point):
                 current_point = enrichment.enrich_point(current_point)
 
-        enriched_timetable.append(current_point)
+        following_points = speed.registry.find_between(current_point, next_point)
 
-    __import__("skrj.enrichments.speed")
+        enriched_timetable.append(current_point)
 
     return enriched_timetable

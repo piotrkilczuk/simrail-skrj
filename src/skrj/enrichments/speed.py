@@ -1,7 +1,8 @@
 import collections
 import enum
 import json
-from typing import Dict, List
+from typing import Dict, List, Any, Optional
+import warnings
 
 from skrj import const
 
@@ -44,7 +45,32 @@ class SpeedRegistry:
                 )
                 self.speed_points_by_line[speed_point.line].append(speed_point)
 
-        raise NotImplementedError(self.speed_points_by_line)
+    def find_between(self, current_point: Dict[str, Any], next_point: Optional[Dict[str, Any]]) -> List[SpeedPoint]:
+        if next_point is None:
+            return []
+
+        # @TODO: Junctions where two or more lines join/diverge are tricky
+        if current_point["line"] != next_point["line"]:
+            print("Speeds on approach to junctions might not work right now.")
+            return []
+
+        applicable_points = []
+        for speed_point in self.speed_points_by_line[current_point["line"]]:
+            if (
+                current_point["mileage"] < next_point["mileage"]
+                and speed_point.start > current_point["mileage"]
+                and speed_point.start < next_point["mileage"]
+            ):
+                print(current_point["nameOfPoint"], speed_point.speed, speed_point.start, speed_point.track.name)
+
+            elif (
+                current_point["mileage"] > next_point["mileage"]
+                and speed_point.start < current_point["mileage"]
+                and speed_point.end > current_point["mileage"]
+            ):
+                print(current_point["nameOfPoint"], speed_point.speed, speed_point.start, speed_point.track.name)
+
+        return applicable_points
 
 
 registry = SpeedRegistry()
