@@ -35,7 +35,6 @@ class EnrichmentRegistry:
     def __iter__(self):
         __import__("skrj.enrichments.crew_changes")
         __import__("skrj.enrichments.radio_channels")
-        __import__("skrj.enrichments.speed")
         return iter(self.enrichments)
 
 
@@ -90,14 +89,10 @@ def enrich_timetable(timetable: List[Dict]) -> List[Dict]:
 
         for enrichment in registry:
             if enrichment.matches_point(current_point, next_point):
-                if enrichment.behavior is EnrichmentBehavior.ENRICH:
-                    current_point = enrichment.enrich_point(current_point)
-                    # print(f"Enriching: {current_point} {enrichment}")
-                elif enrichment.behavior is EnrichmentBehavior.SPEED_CHANGE:
-                    current_point.setdefault("speedChanges", [])
-                    current_point["speedChanges"].append(enrichment.replace_with)
+                current_point = enrichment.enrich_point(current_point)
 
-        # print(f"Enriched: {current_point}")
         enriched_timetable.append(current_point)
+
+    __import__("skrj.enrichments.speed")
 
     return enriched_timetable
