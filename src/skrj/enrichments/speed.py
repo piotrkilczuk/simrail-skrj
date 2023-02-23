@@ -1,6 +1,7 @@
 import collections
 import enum
 import json
+import pprint
 from typing import Dict, List, Any, Optional
 import warnings
 
@@ -49,26 +50,46 @@ class SpeedRegistry:
         if next_point is None:
             return []
 
-        # @TODO: Junctions where two or more lines join/diverge are tricky
+        current_point_mileage = current_point["mileage"]
+        next_point_mileage = next_point["mileage"]
+        line_no = current_point["line"]
+
+        # This might be incorrect, been half-conscious writing this
         if current_point["line"] != next_point["line"]:
-            print("Speeds on approach to junctions might not work right now.")
-            return []
+            if next_point.get("additional_lines") and current_point["line"] in next_point.get("additional_lines"):
+                next_point_mileage = next_point["additional_lines"][current_point["line"]]
+
+            elif current_point.get("additional_lines") and next_point["line"] in current_point.get("additional_lines"):
+                current_point_mileage = current_point["additional_lines"][next_point["line"]]
+                line_no = next_point["line"]
+
+            else:
+                raise ValueError(f"No junction between {current_point} and {next_point}")
 
         applicable_points = []
-        for speed_point in self.speed_points_by_line[current_point["line"]]:
-            if (
-                current_point["mileage"] < next_point["mileage"]
-                and speed_point.start > current_point["mileage"]
-                and speed_point.start < next_point["mileage"]
-            ):
-                print(current_point["nameOfPoint"], speed_point.speed, speed_point.start, speed_point.track.name)
 
-            elif (
-                current_point["mileage"] > next_point["mileage"]
-                and speed_point.start < current_point["mileage"]
-                and speed_point.end > current_point["mileage"]
+        print(
+            current_point["nameOfPoint"],
+            "->",
+            next_point["nameOfPoint"],
+        )
+
+        # raise NotImplementedError((self.speed_points_by_line[1][0].start, self.speed_points_by_line[1][0].end))
+
+        for speed_point in self.speed_points_by_line[line_no]:
+            if current_point_mileage < next_point_mileage and (
+                (speed_point.start > current_point_mileage and speed_point.start < next_point_mileage)
+                or (speed_point.end < next_point_mileage and speed_point.end > current_point_mileage)
             ):
-                print(current_point["nameOfPoint"], speed_point.speed, speed_point.start, speed_point.track.name)
+                # pass
+                print(speed_point.speed, speed_point.start, speed_point.track.name)
+
+            elif current_point_mileage > next_point_mileage and (
+                (speed_point.start > next_point_mileage and speed_point.start < current_point_mileage)
+                or (speed_point.end < current_point_mileage and speed_point.end > next_point_mileage)
+            ):
+                # pass
+                print(speed_point.speed, speed_point.start, speed_point.track.name)
 
         return applicable_points
 

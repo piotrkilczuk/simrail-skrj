@@ -34,6 +34,7 @@ class EnrichmentRegistry:
 
     def __iter__(self):
         __import__("skrj.enrichments.crew_changes")
+        __import__("skrj.enrichments.line_junctions")
         __import__("skrj.enrichments.radio_channels")
         return iter(self.enrichments)
 
@@ -89,9 +90,16 @@ def enrich_timetable(timetable: List[Dict]) -> List[Dict]:
         except IndexError:
             next_point = None
 
+        try:
+            next_next_point = timetable[idx + 2]
+        except IndexError:
+            next_next_point = None
+
         for enrichment in registry:
             if enrichment.matches_point(current_point, next_point):
                 current_point = enrichment.enrich_point(current_point)
+            if enrichment.matches_point(next_point, next_next_point):
+                next_point = enrichment.enrich_point(next_point)
 
         following_points = speed.registry.find_between(current_point, next_point)
 
