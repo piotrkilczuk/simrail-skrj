@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import enum
 import json
@@ -20,12 +22,39 @@ class SpeedPoint:
     speed: int
     track: Track
 
-    def __init__(self, line_no: str, axis_start: str, axis_end: str, vmax: str, track: str):
-        self.line = int(line_no)
-        self.start = int(axis_start) / 1000
-        self.end = int(axis_end) / 1000
-        self.speed = int(vmax)
-        self.track = Track[track]
+    def __init__(self, line: int, start: float, end: float, speed: int, track: Track):
+        self.line = line
+        self.start = start
+        self.end = end
+        self.speed = speed
+        self.track = track
+
+    @classmethod
+    def from_json(cls, line_no: str, axis_start: str, axis_end: str, vmax: str, track: str):
+        return cls(
+            line=int(line_no),
+            start=int(axis_start) / 1000,
+            end=int(axis_end) / 1000,
+            speed=int(vmax),
+            track=Track[track],
+        )
+
+    @classmethod
+    def from_timetable(
+        cls, current_point: Dict[str, Any], next_point: Optional[Dict[str, Any]]
+    ) -> Optional[SpeedPoint]:
+        if next_point is None:
+            return None
+        return cls(
+            line=current_point["line"],
+            start=current_point["mileage"],
+            end=next_point["mileage"],
+            speed=current_point["maxSpeed"],
+            track=Track.N,
+        )
+
+    def __repr__(self):
+        return f"<SpeedPoint: {self.speed} between {self.start} and {self.end} of line {self.line} track {self.track}>"
 
 
 class SpeedRegistry:
@@ -37,7 +66,7 @@ class SpeedRegistry:
         with const.DATA_SPEED.open() as f:
             speed_data_raw = json.load(f)
             for raw_point in speed_data_raw:
-                speed_point = SpeedPoint(
+                speed_point = SpeedPoint.from_json(
                     line_no=raw_point["lineNo"],
                     axis_start=raw_point["axisStart"],
                     axis_end=raw_point["axisEnd"],
@@ -46,7 +75,32 @@ class SpeedRegistry:
                 )
                 self.speed_points_by_line[speed_point.line].append(speed_point)
 
-    def find_between(self, current_point: Dict[str, Any], next_point: Optional[Dict[str, Any]]) -> List[SpeedPoint]:
+    def enrich(self, timetable: Dict):
+        enriched_timetable = []
+
+        for idx, current_point in enumerate(timetable):
+            previous_point = timetable[idx - 1] if idx else None
+            try:
+                next_point = timetable[idx + 1]
+            except IndexError:
+                next_point = None
+
+            enriched_timetable.append(current_point)
+            # print(current_point)
+
+            applicable_speed_points = self.find_for(previous_point, current_point, next_point)
+            enriched_timetable.extend(applicable_speed_points)
+            if applicable_speed_points:
+                print(applicable_speed_points)
+
+        return enriched_timetable
+
+    def find_for(
+        self,
+        previous_point: Optional[Dict[str, Any]],
+        current_point: Dict[str, Any],
+        next_point: Optional[Dict[str, Any]],
+    ) -> List[SpeedPoint]:
         if next_point is None:
             return []
 
@@ -74,22 +128,25 @@ class SpeedRegistry:
             next_point["nameOfPoint"],
         )
 
-        # raise NotImplementedError((self.speed_points_by_line[1][0].start, self.speed_points_by_line[1][0].end))
-
+        # @TODO: this will need to be extended to support 120 in Zawiercie towards Katowice
+        # @TODO: simplify, overly complex
         for speed_point in self.speed_points_by_line[line_no]:
             if current_point_mileage < next_point_mileage and (
                 (speed_point.start > current_point_mileage and speed_point.start < next_point_mileage)
                 or (speed_point.end < next_point_mileage and speed_point.end > current_point_mileage)
             ):
-                # pass
-                print(speed_point.speed, speed_point.start, speed_point.track.name)
+                applicable_points.append(speed_point)
 
             elif current_point_mileage > next_point_mileage and (
                 (speed_point.start > next_point_mileage and speed_point.start < current_point_mileage)
                 or (speed_point.end < current_point_mileage and speed_point.end > next_point_mileage)
             ):
-                # pass
-                print(speed_point.speed, speed_point.start, speed_point.track.name)
+                applicable_points.append(speed_point)
+
+        # some sections are still not covered by speed.json
+        # here we fall back to station speed
+        if not previous_point and not applicable_points:
+            applicable_points.append(SpeedPoint.from_timetable(current_point, next_point))
 
         return applicable_points
 
